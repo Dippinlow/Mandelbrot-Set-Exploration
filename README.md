@@ -1,21 +1,13 @@
-# Mandelbrot-Set-Exploration
+Mandelbrot Set Exploration
 
+I believe this program comes in handy for finding interesting points to zoom in on. A separate program would be utilized to create a zoom animation at the identified point.
 
-i think this program is useful for locating an interesting point to zoom in on.
-A different program would be used to create a zoom animation at the point found
+Instructions:
 
-
-instructions
-
-open code with visual studio
-
-up / down arrow keys will adjust the zoom of the new frame, indicated by the red box
-left / right arrow keys adjust the max iterations of the new frame
-
-click on the form to place the centre of the new frame, indicated by the dot
-
-press space bar to generate the new frame
-
-P key will create a coloured upscaled image of the current frame
-
-the form can be resized to be smaller to reduce the computation required
+- Open the code using Visual Studio.
+- Use the up/down arrow keys to adjust the zoom of the new frame, indicated by the red box.
+- Use the left/right arrow keys to adjust the max iterations of the new frame.
+- Click on the form to position the center of the new frame, marked by a dot.
+- Press the space bar to generate the new frame.
+- Press the 'P' key to create a colored upscaled image of the current frame.
+- The form can be resized to reduce computation requirements.
