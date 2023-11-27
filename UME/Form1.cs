@@ -14,7 +14,7 @@ namespace UME
         Size printSize;
         Bitmap overlay, mandelImage, printImage;
         int maxIt, mouseX, mouseY;
-        float zoom, relativeScale;
+        float zoom, newZoom, relativeScale;
         double halfRange, centreA, centreB, newA, newB;
 
         private void Form1_Load(object sender, EventArgs e)
@@ -24,9 +24,11 @@ namespace UME
 
             centreA = 0;
             centreB = 0;
+            zoom = 1;
 
             newA = centreA; 
             newB = centreB;
+            newZoom = zoom;
 
             mouseX = ClientSize.Width/2;
             mouseY = ClientSize.Height/2;
@@ -65,7 +67,7 @@ namespace UME
             string s = $"Centre r: {newA}\n" +
                        $"Centre i: {newB}\n" +
                        $"Max Iterations: {maxIt}\n" +
-                       $"Zoom: {zoom}\n" +
+                       $"Zoom: {newZoom}\n" +
                        $"Height Range: {halfRange * 2}";
 
             g.DrawString(s, f, b, 0, 0);
@@ -124,6 +126,7 @@ namespace UME
                 case Keys.Space:
                     centreA = newA;
                     centreB = newB;
+                    zoom = newZoom;
                     showMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 1, ClientSize);
                     mandelImage = showMandel.getImage(showColours);
                     mouseX = ClientSize.Width / 2;
@@ -150,13 +153,13 @@ namespace UME
                 case Keys.Up:
                     halfRange /= 2;
                     relativeScale /= 2;
-                    zoom *= 2;
+                    newZoom *= 2;
                     break;
 
                 case Keys.Down:
                     halfRange *= 2;
                     relativeScale *= 2;
-                    zoom /= 2;
+                    newZoom /= 2;
                     break;
 
                 case Keys.Right:
