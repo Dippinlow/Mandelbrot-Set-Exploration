@@ -14,28 +14,27 @@ namespace UME
         Size printSize;
         Bitmap overlay, mandelImage, printImage;
         int maxIt, mouseX, mouseY;
-        float zoom, newZoom, relativeScale;
+        float zoom, relativeScale;
         double halfRange, centreA, centreB, newA, newB;
-
-        private void Form1_Load(object sender, EventArgs e)
+        Task displayTask, printTask;
+        private async void Form1_Load(object sender, EventArgs e)
         {
             ClientSize = new Size(1920 / 2, 1080 / 2);
             printSize = new Size(1920, 1080);
 
             centreA = 0;
             centreB = 0;
-            zoom = 1;
 
-            newA = centreA; 
+            newA = centreA;
             newB = centreB;
-            newZoom = zoom;
 
-            mouseX = ClientSize.Width/2;
-            mouseY = ClientSize.Height/2;
+            mouseX = ClientSize.Width / 2;
+            mouseY = ClientSize.Height / 2;
 
             maxIt = 100;
             halfRange = 2;
             relativeScale = 1;
+            zoom = 1;
 
             showColours = new HSBColour[]{
                 new HSBColour(0, 0, 1)
@@ -45,15 +44,15 @@ namespace UME
 
             for (int i = 0; i < printColours.Length; i++)
             {
-                printColours[i] = new HSBColour(i, 1, 1);
+                printColours[i] = new HSBColour(i + 240, 1, 1);
             }
 
+            displayTask = new Task(processDisplay);
+            displayTask.Start();
 
-            showMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 1, ClientSize);
-            mandelImage = showMandel.getImage(showColours);
-
-            updateOverlay();
-            Invalidate();
+            displayTask.Wait();
+            //updateOverlay();
+            //Invalidate();
         }
 
         private void updateOverlay()
@@ -67,20 +66,19 @@ namespace UME
             string s = $"Centre r: {newA}\n" +
                        $"Centre i: {newB}\n" +
                        $"Max Iterations: {maxIt}\n" +
-                       $"Zoom: {newZoom}\n" +
+                       $"Zoom: {zoom}\n" +
                        $"Height Range: {halfRange * 2}";
 
             g.DrawString(s, f, b, 0, 0);
             g.FillEllipse(b, mouseX - 4, mouseY - 4, 8, 8);
-            
+
             //float xLoad = (float)map(loadingBar, 0, 100, 0, ClientSize.Width);
             if (relativeScale <= 1)
             {
                 g.DrawRectangle(p, mouseX - ClientSize.Width / 2 * relativeScale, mouseY - ClientSize.Height / 2 * relativeScale, ClientSize.Width * relativeScale, ClientSize.Height * relativeScale);
             }
-            
+
             //g.DrawRectangle(p, 0, ClientSize.Height - 100, xLoad, 100);
-            
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -119,47 +117,68 @@ namespace UME
             }
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private void processDisplay()
+        {
+            centreA = newA;
+            centreB = newB;
+            showMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 1, ClientSize);
+            mandelImage = showMandel.getImage(showColours);
+            mouseX = ClientSize.Width / 2;
+            mouseY = ClientSize.Height / 2;
+            relativeScale = 1;
+            updateOverlay();
+            Invalidate();
+        }
+        private void processPrint()
+        {
+            printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 2, printSize);
+            printImage = printMandel.getImage(printColours);
+            printImage.Save($"{centreA},{centreB}Mandelbrot.png");
+            Debug.WriteLine("Print Saved");
+
+
+        }
+
+        private void showPrint()
+        {
+            sf = new ShowForm()
+            {
+                ClientSize = printSize,
+                //WindowState = FormWindowState.Maximized
+            };
+            sf.setPicture(printImage);
+            sf.Show();
+            Console.Beep();
+        }
+
+        private async void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
                 case Keys.Space:
-                    centreA = newA;
-                    centreB = newB;
-                    zoom = newZoom;
-                    showMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 1, ClientSize);
-                    mandelImage = showMandel.getImage(showColours);
-                    mouseX = ClientSize.Width / 2;
-                    mouseY = ClientSize.Height / 2;
-                    relativeScale = 1;
+                    displayTask = new Task(processDisplay);
+                    displayTask.Start();
+
                     break;
+
                 case Keys.P:
+                    printTask = new Task(processPrint);
+                    printTask.Start();
 
-                    printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 4, printSize);
-                    printImage = printMandel.getImage(printColours);
-                    printImage.Save($"{centreA},{centreB}Mandelbrot.png");
-                    Debug.WriteLine("Print Saved");
-
-                    sf = new ShowForm()
-                    {
-                        ClientSize = printSize,
-                        WindowState = FormWindowState.Maximized
-                    };
-                    sf.setPicture(printImage);
-                    sf.Show();
-                    Console.Beep();
+                    printTask.Wait();
+                    showPrint();
                     break;
 
                 case Keys.Up:
                     halfRange /= 2;
                     relativeScale /= 2;
-                    newZoom *= 2;
+                    zoom *= 2;
                     break;
 
                 case Keys.Down:
                     halfRange *= 2;
                     relativeScale *= 2;
-                    newZoom /= 2;
+                    zoom /= 2;
                     break;
 
                 case Keys.Right:

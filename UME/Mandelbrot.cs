@@ -1,4 +1,5 @@
-﻿namespace UME
+﻿using System.Diagnostics;
+namespace UME
 {
     internal class Mandelbrot
     {
@@ -35,7 +36,9 @@
                     }
                         
                 }
+                Debug.WriteLine(Math.Round((float)x/width * 100,2) + "%");
             }
+            
         }
         public Bitmap getImage(HSBColour[] colourWheel)
         {
