@@ -162,11 +162,19 @@ namespace UME
                     break;
 
                 case Keys.P:
+
+
                     printTask = new Task(processPrint);
                     printTask.Start();
 
-                    printTask.Wait();
-                    showPrint();
+                    printTask.GetAwaiter().OnCompleted(showPrint);
+
+
+                    //printTask.Wait();
+                    //showPrint();
+
+
+
                     break;
 
                 case Keys.Up:
