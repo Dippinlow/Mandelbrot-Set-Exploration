@@ -9,5 +9,5 @@ Instructions:
 - Use the left/right arrow keys to adjust the max iterations of the new frame.
 - Click on the form to position the center of the new frame, marked by a dot.
 - Press the space bar to generate the new frame.
-- Press the 'P' key to create a colored upscaled image of the current frame.
+- Press the 'P' key to create a coloured upscaled image of the current frame.
 - The form can be resized to reduce computation requirements.
