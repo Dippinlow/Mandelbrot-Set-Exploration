@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using Wacton.Unicolour;
+
 namespace UME
 {
     internal class Mandelbrot
@@ -40,7 +42,7 @@ namespace UME
             }
             
         }
-        public Bitmap getImage(HSBColour[] colourWheel)
+        public Bitmap getImage(Unicolour[] colourWheel)
         {
             Bitmap img = new Bitmap(width, height);
 
@@ -49,18 +51,24 @@ namespace UME
                 for (int y = 0; y < height; y++)
                 {
                     int iterations = iterationMap[x, y];
-                    Color c;
+                    Unicolour c;
+                    Color winColour;
 
                     if (iterations == maxIterations)
                     {
-                        c = Color.Black;
+                        winColour = Color.Black;
                     }
                     else
                     {
-                        int index = (int)map(iterations, 0, maxIterations, 0, colourWheel.Length-1);
-                        c = colourWheel[index].getRGB();
+                        int index = (int)map(iterations, maxIterations, 0, 0, colourWheel.Length-1);
+                        c = colourWheel[index];
+                        int red = (int)(c.Rgb.R * 255);
+                        int green = (int)(c.Rgb.G * 255);
+                        int blue = (int)(c.Rgb.B * 255);
+
+                        winColour = Color.FromArgb(red, green, blue);
                     }
-                    img.SetPixel(x,height - y - 1, c);
+                    img.SetPixel(x,height - y - 1, winColour);
                 }
             }
 
