@@ -50,9 +50,11 @@ namespace UME
                 double hue = map(i, 0, printColours.Length-1, 0, 360);
                 hue += 240;
 
-                double brightness = map(i, printColours.Length * 1/2, printColours.Length - 1, 1, 0);
+                double brightness = map(i, printColours.Length * 2/3, printColours.Length - 1, 1, 0);
                 printColours[i] = new Unicolour(ColourSpace.Hsb, hue, 1, brightness);
             }
+
+            printColours[0] = new Unicolour(ColourSpace.Hsb, 0, 0, 0);
 
             displayTask = new Task(processDisplay);
             displayTask.Start();
@@ -138,7 +140,9 @@ namespace UME
         }
         private void processPrint()
         {
+            Debug.WriteLine("Building iteration map...");
             printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 2, printSize);
+            Debug.WriteLine("Painting colours...");
             printImage = printMandel.getImage(printColours);
             printImage.Save($"{centreA},{centreB}Mandelbrot.png");
             Debug.WriteLine("Print Saved");
@@ -148,6 +152,7 @@ namespace UME
 
         private void showPrint()
         {
+            Debug.WriteLine("Showing Print");
             sf = new ShowForm()
             {
                 ClientSize = printSize,
@@ -169,17 +174,10 @@ namespace UME
                     break;
 
                 case Keys.P:
-
-
                     printTask = new Task(processPrint);
                     printTask.Start();
 
                     printTask.GetAwaiter().OnCompleted(showPrint);
-
-
-                    //printTask.Wait();
-                    //showPrint();
-
 
 
                     break;

@@ -5,7 +5,7 @@ namespace UME
 {
     internal class Mandelbrot
     {
-        private int[,] iterationMap;
+        private int[, , ] iterationMap;
         private int width, height, maxIterations;
         public Mandelbrot(double centreA, double centreB, double halfRange, int maxIterations, int pixelDepth, Size resolution)
         {
@@ -13,7 +13,7 @@ namespace UME
             height = resolution.Height;
             this.maxIterations = maxIterations;
 
-            iterationMap = new int[width, height];
+            iterationMap = new int[width, height, pixelDepth * pixelDepth];
             double halfPx = halfRange / height / pixelDepth;
             double ratio = (double)width / height;
 
@@ -28,13 +28,18 @@ namespace UME
                     double b = map(y, 0, height - 1, -halfRange, halfRange);
                     b += centreB;
 
-                    if (pixelDepth < 2)
+                    if (pixelDepth == 1)
                     {
-                        iterationMap[x, y] = getIteration(a + halfPx, b + halfPx, maxIterations);
+                        iterationMap[x, y, 0] = getIteration(a + halfPx, b + halfPx, maxIterations);
                     }
                     else
                     {
-                        iterationMap[x, y] = getAverageIteration(a, b, maxIterations, pixelDepth, halfPx);
+                        int[] PPIterations = getPPIteration(a, b, maxIterations, pixelDepth, halfPx);
+                        for (int i = 0; i < PPIterations.Length; i++)
+                        {
+                            iterationMap[x, y, i] = PPIterations[i];
+                        }
+                        
                     }
                         
                 }
@@ -50,33 +55,57 @@ namespace UME
             {
                 for (int y = 0; y < height; y++)
                 {
-                    int iterations = iterationMap[x, y];
-                    Unicolour c;
-                    Color winColour;
-
-                    if (iterations == maxIterations)
-                    {
-                        winColour = Color.Black;
-                    }
-                    else
-                    {
-                        int index = (int)map(iterations, maxIterations, 0, 0, colourWheel.Length-1);
-                        c = colourWheel[index];
-                        int red = (int)(c.Rgb.R * 255);
-                        int green = (int)(c.Rgb.G * 255);
-                        int blue = (int)(c.Rgb.B * 255);
-
-                        winColour = Color.FromArgb(red, green, blue);
-                    }
+                    Color winColour = getColour(x, y, colourWheel);
                     img.SetPixel(x,height - y - 1, winColour);
                 }
             }
 
             return img;
         }
-        private static int getAverageIteration(double a, double b, int maxIterations, int pixelDepth, double halfPx)
+
+        public Color getColour(int x, int y, Unicolour[] colourWheel)
         {
-            int totalIterations = 0;
+            Color winCol;
+
+            if (iterationMap.GetLength(2) == 1)
+            {
+                int iteration = iterationMap[x, y, 0];
+                if (iteration == maxIterations)
+                {
+                    winCol = Color.Black;
+                }
+                else
+                {
+                    winCol= Color.White;
+                }
+            }
+            else
+            {
+                
+                int index = (int)map(iterationMap[x, y, 0], maxIterations, 0, 0, colourWheel.Length-1);
+                Unicolour mixed = colourWheel[index];
+
+                for (int i = 1; i < iterationMap.GetLength(2); i++)
+                {
+                    index = (int)map(iterationMap[x, y, i], maxIterations, 0, 0, colourWheel.Length-1);
+                    mixed = mixed.Mix(ColourSpace.Rgb255, colourWheel[index]);
+                }
+
+
+
+
+                int red = (int)(mixed.Rgb.R * 255);
+                int green = (int)(mixed.Rgb.G * 255);
+                int blue = (int)(mixed.Rgb.B * 255);
+                //Debug.WriteLine("Colour found");
+                winCol = Color.FromArgb(red, green, blue);
+            }
+
+            return winCol;
+        }
+        private static int[] getPPIteration(double a, double b, int maxIterations, int pixelDepth, double halfPx)
+        {
+            int[] iterations = new int[pixelDepth * pixelDepth];
 
             for (int x = 0; x < pixelDepth; x++)
             {
@@ -85,12 +114,13 @@ namespace UME
                     double aOff = x * halfPx * 2 + halfPx;
                     double bOff = y * halfPx * 2 + halfPx;
 
-                    totalIterations += getIteration(a + aOff, b + bOff, maxIterations);
+                    iterations[x + pixelDepth * y] = getIteration(a + aOff, b + bOff, maxIterations);
                 }
             }
 
-            int averageIterations = (int)Math.Round((float)totalIterations / (pixelDepth * pixelDepth));
-            return averageIterations;
+            //int averageIterations = (int)Math.Round((float)totalIterations / (pixelDepth * pixelDepth));
+            //return averageIterations;
+            return iterations;
 
         }
         private static int getIteration(double a, double b, int maxIterations)
