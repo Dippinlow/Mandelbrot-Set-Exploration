@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Wacton.Unicolour;
 
 namespace UME
 {
@@ -9,7 +10,12 @@ namespace UME
             InitializeComponent();
         }
         Mandelbrot showMandel, printMandel;
-        HSBColour[] showColours, printColours;
+
+        Unicolour[] printColours = new Unicolour[1000];
+
+        Unicolour[] showColours = new Unicolour[] {new Unicolour(ColourSpace.Rgb, 1, 1, 1)};
+
+
         ShowForm sf;
         Size printSize;
         Bitmap overlay, mandelImage, printImage;
@@ -36,15 +42,16 @@ namespace UME
             relativeScale = 1;
             zoom = 1;
 
-            showColours = new HSBColour[]{
-                new HSBColour(0, 0, 1)
-            };
-
-            printColours = new HSBColour[360];
+            
+            
 
             for (int i = 0; i < printColours.Length; i++)
             {
-                printColours[i] = new HSBColour(i + 240, 1, 1);
+                double hue = map(i, 0, printColours.Length-1, 0, 360);
+                hue += 240;
+
+                double brightness = map(i, printColours.Length * 1/2, printColours.Length - 1, 1, 0);
+                printColours[i] = new Unicolour(ColourSpace.Hsb, hue, 1, brightness);
             }
 
             displayTask = new Task(processDisplay);
