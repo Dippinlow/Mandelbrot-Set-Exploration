@@ -19,7 +19,7 @@ namespace UME
         ShowForm sf;
         Size printSize;
         Bitmap overlay, mandelImage, printImage;
-        int maxIt, mouseX, mouseY;
+        int maxIt, mouseX, mouseY, firstIT;
         float zoom, relativeScale;
         double halfRange, centreA, centreB, newA, newB;
         Task displayTask, printTask;
@@ -70,10 +70,13 @@ namespace UME
             centreA = double.Parse(data[1]);
             halfRange = double.Parse(data[2]);
             maxIt = int.Parse(data[3]);
+            firstIT = int.Parse(data[3]);
 
             for (int i = 0; i < 1000; i++)
             {
-
+                printTask = new Task(processPrint);
+                printTask.Start();
+                printTask.Wait();
             }
 
             
@@ -177,7 +180,7 @@ namespace UME
             Debug.WriteLine("Painting colours...");
             printImage = printMandel.getImage(printColours);
             //printImage.Save($"{centreA},{centreB}Mandelbrot.png");
-            printImage.Save($"{maxIt}Mandelbrot.png");
+            printImage.Save($"D:\\ImageSpam\\{numberName(maxIt-firstIT)}.png");
             Debug.WriteLine("Print Saved");
 
 
