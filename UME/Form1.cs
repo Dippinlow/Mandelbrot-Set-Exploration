@@ -62,6 +62,38 @@ namespace UME
             displayTask.Wait();
             //updateOverlay();
             //Invalidate();
+
+
+            StreamReader streamReader = new StreamReader("data.txt");
+            string[] data = streamReader.ReadToEnd().Split('\n');
+            centreA = double.Parse(data[0]);
+            centreA = double.Parse(data[1]);
+            halfRange = double.Parse(data[2]);
+            maxIt = int.Parse(data[3]);
+
+            for (int i = 0; i < 1000; i++)
+            {
+
+            }
+
+            
+        }
+
+        private static string numberName(int number)
+        {
+            if (number < 10)
+            {
+                return "000" + number;
+            }
+            if (number < 100)
+            {
+                return "00" + number;
+            }
+            if (number < 1000)
+            {
+                return "0" + number;
+            }
+            return "" + number;
         }
 
         private void updateOverlay()
@@ -141,10 +173,11 @@ namespace UME
         private void processPrint()
         {
             Debug.WriteLine("Building iteration map...");
-            printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 2, printSize);
+            printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 4, printSize);
             Debug.WriteLine("Painting colours...");
             printImage = printMandel.getImage(printColours);
-            printImage.Save($"{centreA},{centreB}Mandelbrot.png");
+            //printImage.Save($"{centreA},{centreB}Mandelbrot.png");
+            printImage.Save($"{maxIt}Mandelbrot.png");
             Debug.WriteLine("Print Saved");
 
 
@@ -181,7 +214,15 @@ namespace UME
 
 
                     break;
-
+                case Keys.S:
+                    StreamWriter fileWriter = new StreamWriter("data.txt");
+                    fileWriter.WriteLine(centreA);
+                    fileWriter.WriteLine(centreB);
+                    fileWriter.WriteLine(halfRange);
+                    fileWriter.WriteLine(maxIt);
+                    fileWriter.Close();
+                    Debug.WriteLine("Data saved!");
+                    break;
                 case Keys.Up:
                     halfRange /= 2;
                     relativeScale /= 2;
