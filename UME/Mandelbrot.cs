@@ -43,7 +43,7 @@ namespace UME
                     }
                         
                 }
-                Debug.WriteLine(Math.Round((float)x/width * 100,2) + "%");
+                //Debug.WriteLine(Math.Round((float)x/width * 100,2) + "%");
             }
             
         }

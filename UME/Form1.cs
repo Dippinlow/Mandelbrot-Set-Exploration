@@ -22,7 +22,7 @@ namespace UME
         int maxIt, mouseX, mouseY, firstIT;
         float zoom, relativeScale;
         double halfRange, centreA, centreB, newA, newB;
-        Task displayTask, printTask;
+        Task displayTask, printTask, funTask;
         private async void Form1_Load(object sender, EventArgs e)
         {
             ClientSize = new Size(1920 / 2, 1080 / 2);
@@ -63,23 +63,36 @@ namespace UME
             //updateOverlay();
             //Invalidate();
 
-
             StreamReader streamReader = new StreamReader("data.txt");
             string[] data = streamReader.ReadToEnd().Split('\n');
             centreA = double.Parse(data[0]);
-            centreA = double.Parse(data[1]);
+            centreB = double.Parse(data[1]);
             halfRange = double.Parse(data[2]);
             maxIt = int.Parse(data[3]);
             firstIT = int.Parse(data[3]);
+
+            Debug.WriteLine("A:" + centreA);
+            Debug.WriteLine("B:" + centreB);
+            Debug.WriteLine("hF:" + halfRange);
+            Debug.WriteLine("mI:" + maxIt);
+            funTask = new Task(fun);
+
+            funTask.Start();
+        }
+
+
+        void fun()
+        {
+            
 
             for (int i = 0; i < 1000; i++)
             {
                 printTask = new Task(processPrint);
                 printTask.Start();
                 printTask.Wait();
+                Debug.WriteLine(i);
+                maxIt++;
             }
-
-            
         }
 
         private static string numberName(int number)
@@ -176,7 +189,7 @@ namespace UME
         private void processPrint()
         {
             Debug.WriteLine("Building iteration map...");
-            printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 4, printSize);
+            printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 2, printSize);
             Debug.WriteLine("Painting colours...");
             printImage = printMandel.getImage(printColours);
             //printImage.Save($"{centreA},{centreB}Mandelbrot.png");
