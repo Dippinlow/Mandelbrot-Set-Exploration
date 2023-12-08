@@ -182,6 +182,16 @@ namespace UME
 
                     break;
 
+                case Keys.S:
+                    StreamWriter fileWriter = new StreamWriter("data.txt");
+                    fileWriter.WriteLine(centreA);
+                    fileWriter.WriteLine(centreB);
+                    fileWriter.WriteLine(halfRange);
+                    fileWriter.WriteLine(maxIt);
+                    fileWriter.Close();
+                    Debug.WriteLine("Data saved!");
+                    break;
+
                 case Keys.Up:
                     halfRange /= 2;
                     relativeScale /= 2;
