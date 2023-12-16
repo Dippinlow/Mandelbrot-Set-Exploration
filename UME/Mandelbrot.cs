@@ -123,20 +123,20 @@ namespace UME
             return iterations;
 
         }
-        private static int getIteration(double a, double b, int maxIterations)
+        private static int getIteration(double cRe, double cIm, int maxIterations)
         {
-            double Za = 0;
-            double Zb = 0;
+            double zRe = 0;
+            double zIm = 0;
 
             for (int i = 0; i < maxIterations; i++)
             {
-                double newZa = Za * Za - Zb * Zb;
-                double newZb = 2 * Za * Zb;
+                double newZa = zRe * zRe - zIm * zIm;
+                double newZb = Math.Abs(2 * zRe * zIm);
 
-                Za = newZa + a;
-                Zb = newZb + b;
+                zRe = newZa + cRe;
+                zIm = newZb - cIm;
 
-                if (Za * Za + Zb * Zb > 4)
+                if (zRe * zRe + zIm * zIm > 4)
                 {
                     return i;
                 }
