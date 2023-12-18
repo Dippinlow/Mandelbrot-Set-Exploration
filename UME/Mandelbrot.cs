@@ -7,34 +7,32 @@ namespace UME
     {
         private int[, , ] iterationMap;
         private int width, height, maxIterations;
-        public Mandelbrot(double centreA, double centreB, double halfRange, int maxIterations, int pixelDepth, Size resolution)
+        private Complex centre;
+        private double halfRange;
+        public Mandelbrot(Complex centre, double halfRange, int maxIterations, int pixelDepth, Size resolution)
         {
             width = resolution.Width; 
             height = resolution.Height;
+            this.centre = centre;
             this.maxIterations = maxIterations;
-
+            this.halfRange = halfRange;
             iterationMap = new int[width, height, pixelDepth * pixelDepth];
             double halfPx = halfRange / height / pixelDepth;
-            double ratio = (double)width / height;
 
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
 
-                    double a = map(x, 0, width - 1, -halfRange, halfRange) * ratio;
-                    a += centreA;
-
-                    double b = map(y, 0, height - 1, -halfRange, halfRange);
-                    b += centreB;
+                    Complex c = canvasToComplex(x, y);
 
                     if (pixelDepth == 1)
                     {
-                        iterationMap[x, y, 0] = getIteration(a + halfPx, b + halfPx, maxIterations);
+                        iterationMap[x, y, 0] = getIteration(c + new Complex(halfPx, halfPx), maxIterations);
                     }
                     else
                     {
-                        int[] PPIterations = getPPIteration(a, b, maxIterations, pixelDepth, halfPx);
+                        int[] PPIterations = getPPIteration(c, maxIterations, pixelDepth, halfPx);
                         for (int i = 0; i < PPIterations.Length; i++)
                         {
                             iterationMap[x, y, i] = PPIterations[i];
@@ -47,6 +45,40 @@ namespace UME
             }
             
         }
+        private Complex canvasToComplex(float x, float y)
+        {
+            double complexWidth, complexHeight;
+            //double shortSide = (double)4 / zoom;
+            double shortSide = 2 * halfRange;
+            if (width > height)
+            {
+                complexWidth = shortSide * width / height;
+                complexHeight = shortSide;
+            }
+            else
+            {
+                complexWidth = shortSide;
+                complexHeight = shortSide * height / width;
+            }
+
+            double xRatio = x / width;
+            double yRatio = 1 - y / height;
+
+            double real = xRatio * complexWidth;
+            double imaginary = yRatio * complexHeight;
+
+            real -= complexWidth / 2;
+            imaginary -= complexHeight / 2;
+
+
+            Complex c = new Complex(real, imaginary);
+            c += centre;
+            
+
+            return c;
+        }
+
+
         public Bitmap getImage(Unicolour[] colourWheel)
         {
             Bitmap img = new Bitmap(width, height);
@@ -56,7 +88,7 @@ namespace UME
                 for (int y = 0; y < height; y++)
                 {
                     Color winColour = getColour(x, y, colourWheel);
-                    img.SetPixel(x,height - y - 1, winColour);
+                    img.SetPixel(x,y, winColour);
                 }
             }
 
@@ -97,13 +129,12 @@ namespace UME
                 int red = (int)(mixed.Rgb.R * 255);
                 int green = (int)(mixed.Rgb.G * 255);
                 int blue = (int)(mixed.Rgb.B * 255);
-                //Debug.WriteLine("Colour found");
                 winCol = Color.FromArgb(red, green, blue);
             }
 
             return winCol;
         }
-        private static int[] getPPIteration(double a, double b, int maxIterations, int pixelDepth, double halfPx)
+        private static int[] getPPIteration(Complex c, int maxIterations, int pixelDepth, double halfPx)
         {
             int[] iterations = new int[pixelDepth * pixelDepth];
 
@@ -114,29 +145,21 @@ namespace UME
                     double aOff = x * halfPx * 2 + halfPx;
                     double bOff = y * halfPx * 2 + halfPx;
 
-                    iterations[x + pixelDepth * y] = getIteration(a + aOff, b + bOff, maxIterations);
+                    iterations[x + pixelDepth * y] = getIteration(c + new Complex(aOff, bOff), maxIterations);
                 }
             }
-
-            //int averageIterations = (int)Math.Round((float)totalIterations / (pixelDepth * pixelDepth));
-            //return averageIterations;
             return iterations;
 
         }
-        private static int getIteration(double cRe, double cIm, int maxIterations)
+        private static int getIteration(Complex c, int maxIterations)
         {
-            double zRe = 0;
-            double zIm = 0;
+            Complex z = new Complex();
 
             for (int i = 0; i < maxIterations; i++)
             {
-                double newZa = zRe * zRe - zIm * zIm;
-                double newZb = Math.Abs(2 * zRe * zIm);
+                z = Complex.Square(z) + c;
 
-                zRe = newZa + cRe;
-                zIm = newZb - cIm;
-
-                if (zRe * zRe + zIm * zIm > 4)
+                if (Complex.SquareModulus(z) > 4)
                 {
                     return i;
                 }

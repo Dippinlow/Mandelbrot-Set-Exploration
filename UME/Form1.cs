@@ -21,18 +21,16 @@ namespace UME
         Bitmap overlay, mandelImage, printImage;
         int maxIt, mouseX, mouseY;
         float zoom, relativeScale;
-        double halfRange, centreA, centreB, newA, newB;
+        double halfRange;
+        Complex centre, newCentre;
         Task displayTask, printTask;
         private async void Form1_Load(object sender, EventArgs e)
         {
             ClientSize = new Size(1920 / 2, 1080 / 2);
             printSize = new Size(1920, 1080);
 
-            centreA = 0;
-            centreB = 0;
-
-            newA = centreA;
-            newB = centreB;
+            centre = new Complex();
+            newCentre = new Complex();
 
             mouseX = ClientSize.Width / 2;
             mouseY = ClientSize.Height / 2;
@@ -60,8 +58,6 @@ namespace UME
             displayTask.Start();
 
             displayTask.Wait();
-            //updateOverlay();
-            //Invalidate();
         }
 
         private void updateOverlay()
@@ -72,8 +68,8 @@ namespace UME
             Pen p = new Pen(Color.Red);
             Font f = new Font("Arial", 16);
 
-            string s = $"Centre r: {newA}\n" +
-                       $"Centre i: {newB}\n" +
+            string s = $"Centre r: {newCentre.real}\n" +
+                       $"Centre i: {newCentre.imaginary}\n" +
                        $"Max Iterations: {maxIt}\n" +
                        $"Zoom: {zoom}\n" +
                        $"Height Range: {halfRange * 2}";
@@ -81,13 +77,10 @@ namespace UME
             g.DrawString(s, f, b, 0, 0);
             g.FillEllipse(b, mouseX - 4, mouseY - 4, 8, 8);
 
-            //float xLoad = (float)map(loadingBar, 0, 100, 0, ClientSize.Width);
             if (relativeScale <= 1)
             {
                 g.DrawRectangle(p, mouseX - ClientSize.Width / 2 * relativeScale, mouseY - ClientSize.Height / 2 * relativeScale, ClientSize.Width * relativeScale, ClientSize.Height * relativeScale);
             }
-
-            //g.DrawRectangle(p, 0, ClientSize.Height - 100, xLoad, 100);
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -99,10 +92,10 @@ namespace UME
         private void Form1_MouseClick(object sender, MouseEventArgs e)
         {
             double ratio = (double)ClientSize.Width / ClientSize.Height;
+            double realMap = map(e.X, 0, ClientSize.Width, -halfRange, halfRange) * ratio;
+            double imaginaryMap = map(e.Y, 0, ClientSize.Height, -halfRange, halfRange);
 
-            newA = centreA + map(e.X, 0, ClientSize.Width, -halfRange, halfRange) * ratio;
-            newB = centreB - map(e.Y, 0, ClientSize.Height, -halfRange, halfRange);
-
+            newCentre = centre + new Complex(realMap, -imaginaryMap);
             mouseX = e.X;
             mouseY = e.Y;
 
@@ -128,9 +121,8 @@ namespace UME
 
         private void processDisplay()
         {
-            centreA = newA;
-            centreB = newB;
-            showMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 1, ClientSize);
+            centre = newCentre;
+            showMandel = new Mandelbrot(centre, halfRange, maxIt, 1, ClientSize);
             mandelImage = showMandel.getImage(showColours);
             mouseX = ClientSize.Width / 2;
             mouseY = ClientSize.Height / 2;
@@ -141,10 +133,10 @@ namespace UME
         private void processPrint()
         {
             Debug.WriteLine("Building iteration map...");
-            printMandel = new Mandelbrot(centreA, centreB, halfRange, maxIt, 2, printSize);
+            printMandel = new Mandelbrot(centre, halfRange, maxIt, 2, printSize);
             Debug.WriteLine("Painting colours...");
             printImage = printMandel.getImage(printColours);
-            printImage.Save($"{centreA},{centreB}Mandelbrot.png");
+            printImage.Save($"{centre.real},{centre.imaginary}Mandelbrot.png");
             Debug.WriteLine("Print Saved");
 
 
@@ -184,8 +176,8 @@ namespace UME
 
                 case Keys.S:
                     StreamWriter fileWriter = new StreamWriter("data.txt");
-                    fileWriter.WriteLine(centreA);
-                    fileWriter.WriteLine(centreB);
+                    fileWriter.WriteLine(centre.real);
+                    fileWriter.WriteLine(centre.imaginary);
                     fileWriter.WriteLine(halfRange);
                     fileWriter.WriteLine(maxIt);
                     fileWriter.Close();
