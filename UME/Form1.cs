@@ -203,6 +203,14 @@ namespace UME
                 case Keys.Left:
                     maxIt -= 20;
                     break;
+
+                case Keys.Q:
+                    maxIt += 1;
+                    break;
+
+                case Keys.E:
+                    maxIt -= 1;
+                    break;
             }
             updateOverlay();
             Invalidate();
