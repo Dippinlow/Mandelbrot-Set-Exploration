@@ -11,15 +11,16 @@ namespace UME
         }
         Mandelbrot showMandel, printMandel;
 
-        Unicolour[] printColours = new Unicolour[1000];
+        //Unicolour[] printColours = new Unicolour[1000];
 
-        Unicolour[] showColours = new Unicolour[] {new Unicolour(ColourSpace.Rgb, 1, 1, 1)};
-
-
+        //Unicolour[] showColours = new Unicolour[] {new Unicolour(ColourSpace.Rgb, 1, 1, 1)};
+        Quality displayQuality, printQuality;
+        Location currentLocation, nextLocation;
+        
         ShowForm sf;
         Size printSize;
         Bitmap overlay, mandelImage, printImage;
-        int maxIt, mouseX, mouseY;
+        int maxIt, mouseX, mouseY, printIndex;
         float zoom, relativeScale;
         double halfRange;
         Complex centre, newCentre;
@@ -39,10 +40,13 @@ namespace UME
             halfRange = 2;
             relativeScale = 1;
             zoom = 1;
+            printIndex = 0;
+            currentLocation = new Location(centre, zoom);
+            nextLocation = new Location(centre, zoom);
+            displayQuality = new Quality(ClientSize.Width, ClientSize.Height, maxIt);
+            printQuality = new Quality(printSize.Width, printSize.Height, maxIt);
 
-            
-            
-
+            /*
             for (int i = 0; i < printColours.Length; i++)
             {
                 double hue = map(i, 0, printColours.Length-1, 0, 360);
@@ -53,7 +57,7 @@ namespace UME
             }
 
             printColours[0] = new Unicolour(ColourSpace.Hsb, 0, 0, 0);
-
+            */
             displayTask = new Task(processDisplay);
             displayTask.Start();
 
@@ -122,8 +126,10 @@ namespace UME
         private void processDisplay()
         {
             centre = newCentre;
-            showMandel = new Mandelbrot(centre, halfRange, maxIt, 1, ClientSize);
-            mandelImage = showMandel.getImage(showColours);
+            currentLocation = new Location(newCentre, zoom);
+            showMandel = new Mandelbrot(currentLocation, displayQuality);
+            showMandel.process(1.5);
+            mandelImage = showMandel.getImage();
             mouseX = ClientSize.Width / 2;
             mouseY = ClientSize.Height / 2;
             relativeScale = 1;
@@ -133,13 +139,13 @@ namespace UME
         private void processPrint()
         {
             Debug.WriteLine("Building iteration map...");
-            printMandel = new Mandelbrot(centre, halfRange, maxIt, 2, printSize);
-            Debug.WriteLine("Painting colours...");
-            printImage = printMandel.getImage(printColours);
-            printImage.Save($"{centre.real},{centre.imaginary}Mandelbrot.png");
+            printMandel = new Mandelbrot(currentLocation, printQuality);
+            printMandel.process(1.5);
+            printImage = printMandel.getImage();
+            printImage.Save($"Prints\\{printIndex}, {(float)centre.real},{(float)centre.imaginary}Mandelbrot.png");
             Debug.WriteLine("Print Saved");
-
-
+            printIndex++;
+            Debug.WriteLine(printIndex);
         }
 
         private void showPrint()
@@ -205,11 +211,11 @@ namespace UME
                     break;
 
                 case Keys.Q:
-                    maxIt += 1;
+                    maxIt -= 1;
                     break;
 
                 case Keys.E:
-                    maxIt -= 1;
+                    maxIt += 1;
                     break;
             }
             updateOverlay();
