@@ -127,6 +127,7 @@ namespace UME
         {
             centre = newCentre;
             currentLocation = new Location(newCentre, zoom);
+            displayQuality = new Quality(Width, Height, maxIt);
             showMandel = new Mandelbrot(currentLocation, displayQuality);
             showMandel.process(1.5);
             mandelImage = showMandel.getImage();
